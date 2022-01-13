@@ -195,5 +195,23 @@ class SqlServerPipeline(metaclass=SingletonType):
             cur.close()
             self.connect.close()
 
+    def find(self, sql: str):
+        '''
+        通过sql查询对应的数据结果
+        :param sql: sql语句
+        :return:
+        '''
+        cur = self.__get_connect()
+        try:
+            cur.execute(sql)
+            desc = cur.description
+            result = (dict(zip((d[0] for d in desc), data)) for data in cur.fetchall())
+            return result
+        except Exception as e:
+            print('Find Data Failed:', e)
+        finally:
+            cur.close()
+            self.connect.close()
+
 
 x_mssql = SqlServerPipeline()
