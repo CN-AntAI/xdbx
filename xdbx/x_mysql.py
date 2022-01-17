@@ -6,6 +6,7 @@
 # @Email   : 18656170559@163.com
 # @Software: PyCharm
 # @Blog ：http://www.cnblogs.com/yunlongaimeng/
+import copy
 import threading
 
 import pymysql
@@ -61,13 +62,14 @@ class MySQLPipeline(metaclass=SingletonType):
     def get_connect_test(self):
         return self.__get_connect()
 
-    def __create_table(self, cur, item: dict, table: str):
+    def __create_table(self, cur, ite: dict, table: str, primary_key: str = None):
         '''
         合建表相关的信息
         :param item: 数据
         :param table: 表名
         :return:
         '''
+        item = copy.deepcopy(ite)
         # cur = self.__get_connect()
         # 判断是否存在该表
         sql = f'''select * from information_schema.tables where table_name ='{table}';'''
@@ -75,6 +77,8 @@ class MySQLPipeline(metaclass=SingletonType):
         if not cur.fetchone():
             # 生成创建字段信息
             # ------------目前只支持两种整型及字符串----------------------
+            if primary_key:
+                item.pop(primary_key)
             field_info = ',\n'.join(
                 [
                     # f'{field} bigint' if isinstance(values, int) else f'{field} nvarchar(max)'
@@ -115,9 +119,19 @@ class MySQLPipeline(metaclass=SingletonType):
                                 x_updatetime timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                 {field_info},
                                 PRIMARY KEY (`x_id`)
-                                )ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;'''
+                                )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;'''
+                if primary_key:
+                    sql_table = f'''create table {table}(
+                                x_id bigint NOT NULL AUTO_INCREMENT,
+                                x_inserttime timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+                                x_updatetime timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                {primary_key} varchar(255),
+                                {field_info},
+                                INDEX (x_id),
+                                PRIMARY KEY ({primary_key})
+                                )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;'''
                 try:
-                    # print(sql_table)
+                    print(sql_table)
                     cur.execute(sql_table)
                     self.connect.commit()
                     print(f'Mysql Version is :{mysql_version}', '*' * 15, 'Create Table Successful')
@@ -151,7 +165,7 @@ class MySQLPipeline(metaclass=SingletonType):
                 except Exception as e:
                     print('Create Field Failed', e)
 
-    def insert_one(self, item: dict, table: str):
+    def insert_one(self, item: dict, table: str, primary_key: str = None):
         '''
         插入一条数据
         :param item:
@@ -159,7 +173,7 @@ class MySQLPipeline(metaclass=SingletonType):
         :return:
         '''
         cur = self.__get_connect()
-        self.__create_table(cur=cur, item=item, table=table)
+        self.__create_table(cur=cur, ite=item, table=table, primary_key=primary_key)
         # 获取到一个以键且为逗号分隔的字符串，返回一个字符串
         keys = ', '.join(item.keys())
         values = ', '.join(['%s'] * len(item))
@@ -173,15 +187,15 @@ class MySQLPipeline(metaclass=SingletonType):
             cur.execute(sql, tuple(data))
             print('Insert One Successful')
             self.connect.commit()
-        except:
-            print('Insert One Failed')
+        except Exception as e:
+            print('Insert One Failed,', e)
             self.connect.rollback()
         finally:
             cur.close()
             self.connect.close()
         pass
 
-    def insert_many(self, items: list, table: str):
+    def insert_many(self, items: list, table: str, primary_key: str = None):
         '''
         批量插入数据
         :param items:
@@ -194,7 +208,7 @@ class MySQLPipeline(metaclass=SingletonType):
         k_temp = {k for ite in items for k in ite.keys()}
         v_temp = ['' for _ in range(len(k_temp))]
         data = dict(zip(k_temp, v_temp))
-        self.__create_table(cur=cur, item=data, table=table)
+        self.__create_table(cur=cur, ite=data, table=table, primary_key=primary_key)
         values = ', '.join(['%s'] * len(data))
         # [[item.update({k: str(v)}) for k, v in item.items() if not isinstance(v, (int, str))] for item in items]
         result_data = [{k: str(item.get(k)) if item.get(k) else '' for k in data.keys()} for item in items]
