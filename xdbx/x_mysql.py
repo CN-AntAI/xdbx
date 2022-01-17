@@ -131,7 +131,7 @@ class MySQLPipeline(metaclass=SingletonType):
                                 PRIMARY KEY ({primary_key})
                                 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;'''
                 try:
-                    print(sql_table)
+                    # print(sql_table)
                     cur.execute(sql_table)
                     self.connect.commit()
                     print(f'Mysql Version is :{mysql_version}', '*' * 15, 'Create Table Successful')
