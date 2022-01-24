@@ -7,16 +7,13 @@
 # @Software: PyCharm
 # @Blog ：http://www.cnblogs.com/yunlongaimeng/
 
-
-# ***************Kafka配置-start*********************
 import os
 
-KAFKA_HOST = '127.0.0.1'
-KAFKA_PORT = '6667'
-KAFKA_TOPIC_NEW = 'test_bbs'
-KAFKA_TOPIC_BACK = 'VIDEO_BBS'
-KAFKA_PARTITION = 4
-KAFKA_TOPIC_TEST = 'test_addFile'
+# ***************Kafka配置-start*********************
+KAFKA_HOST = os.getenv("KAFKA_HOST", '127.0.0.1')
+KAFKA_PORT = os.getenv("KAFKA_PORT", '9092')
+KAFKA_TOPIC = os.getenv("KAFKA_TOPIC")
+KAFKA_PARTITION = os.getenv("KAFKA_PARTITION")
 # ***************Kafka配置-end*********************
 
 
