@@ -9,20 +9,9 @@
 import copy
 
 import pymssql
-import threading
 
 from .config import SQLSERVER_HOST, SQLSERVER_USERNAME, SQLSERVER_PASSWORD, SQLSERVER_DB
-
-
-class SingletonType(type):
-    _instance_lock = threading.Lock()
-
-    def __call__(cls, *args, **kwargs):
-        if not hasattr(cls, "_instance"):
-            with SingletonType._instance_lock:
-                if not hasattr(cls, "_instance"):
-                    cls._instance = super(SingletonType, cls).__call__(*args, **kwargs)
-        return cls._instance
+from .x_single import SingletonType
 
 
 class SqlServerPipeline(metaclass=SingletonType):

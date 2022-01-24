@@ -28,5 +28,5 @@ setup(
     author_email="18656170559@163.com",
     include_package_data=True,
     platforms="any",
-    install_requires=['wheel', 'pymysql', 'pymssql', 'dbutils', 'pyxbox>=0.0.3', 'kafka']
+    install_requires=['wheel', 'pymysql', 'pymssql', 'dbutils', 'pyxbox>=0.0.3', 'kafka', 'elasticsearch']
 )

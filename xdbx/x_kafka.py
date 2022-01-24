@@ -7,22 +7,11 @@
 # @Software: PyCharm
 # @Blog ：http://www.cnblogs.com/yunlongaimeng/
 import json
-import threading
 
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
 from .config import KAFKA_HOST, KAFKA_PORT, KAFKA_TOPIC
-
-
-class SingletonType(type):
-    _instance_lock = threading.Lock()
-
-    def __call__(cls, *args, **kwargs):
-        if not hasattr(cls, "_instance"):
-            with SingletonType._instance_lock:
-                if not hasattr(cls, "_instance"):
-                    cls._instance = super(SingletonType, cls).__call__(*args, **kwargs)
-        return cls._instance
+from .x_single import SingletonType
 
 
 class XKafka(metaclass=SingletonType):
