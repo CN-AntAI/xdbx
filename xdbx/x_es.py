@@ -6,7 +6,9 @@
 # @Email   : 18656170559@163.com
 # @Software: PyCharm
 # @Blog ：http://www.cnblogs.com/yunlongaimeng/
+import copy
 import hashlib
+import itertools
 import json
 import math
 
@@ -15,7 +17,6 @@ from elasticsearch import Elasticsearch
 
 from config import ES_HOST_PORT_LIST
 from x_single import SingletonType
-from itertools import chain
 
 
 class XES(metaclass=SingletonType):
@@ -42,19 +43,20 @@ class XES(metaclass=SingletonType):
         self.batch_id = hashlib.md5((str(query_json)).encode('utf8')).hexdigest()
         query_body = json.loads(query_json)
         size = query_body.get('size')
-        hits_result = chain()
+        hits_result = itertools.chain()
         if size >= self.batch_size:
             times = math.ceil(size / self.batch_size)
             for t in range(1, times + 1):
                 query_body['size'] = self.batch_size * t
                 result_temp = self.__get_data(es, query_body=query_body)
-                hits_result = chain(hits_result, result_temp)
+                hits_result = itertools.chain(hits_result, result_temp)
         else:
             hits_result = self.__get_data(es, query_body=query_body)
+        return_hits_result, temp_hits_result = itertools.tee(hits_result, 2)
 
         if to_excel:
             self.__init_excel()
-            df = pd.DataFrame(list(hits_result))
+            df = pd.DataFrame(list(temp_hits_result))
             df.fillna('', inplace=True)
             df.to_excel(self.writer, encoding='utf_8_sig', sheet_name='hits_result')
             if self.aggs_result_sign:
@@ -63,7 +65,7 @@ class XES(metaclass=SingletonType):
                 df.to_excel(self.writer, encoding='utf_8_sig', sheet_name=self.agg_name + 'aggs_result')
             self.writer.save()
 
-        return hits_result
+        return return_hits_result
         pass
 
     def __get_data(self, es, query_body):
@@ -121,4 +123,5 @@ query_json = '''{
     }
   }
 }'''
-x_es.query(query_json=query_json, to_excel=True)
+datas = x_es.query(query_json=query_json, to_excel=True)
+print(datas)
