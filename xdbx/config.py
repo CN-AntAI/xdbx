@@ -9,6 +9,8 @@
 
 
 # ***************Kafka配置-start*********************
+import os
+
 KAFKA_HOST = '127.0.0.1'
 KAFKA_PORT = '6667'
 KAFKA_TOPIC_NEW = 'test_bbs'
@@ -19,23 +21,25 @@ KAFKA_TOPIC_TEST = 'test_addFile'
 
 
 # ***************mongo数据库配置-start*********************
-MONGO_URI = "mongodb://localhost:27017/"
-MONGO_DB = "ClientIds"
+MONGO_HOST = os.getenv("MONGO_HOST", "localhost")
+MONGO_PORT = int(os.getenv("MONGO_PORT", 27017))
+MONGO_DB = os.getenv("MONGO_DB")
+MONGO_USERNAME = os.getenv("MONGO_USER_NAME")
+MONGO_PASSWORD = os.getenv("MONGO_USER_PASS")
 # ***************mongo数据库配置-end*********************
 
 # ***************SqlServer数据库配置-start*********************
-SQLSERVER_HOST = '127.0.0.1'
-SQLSERVER_USERNAME = 'brucelong'
-SQLSERVER_PASSWORD = 'adminroot'
-SQLSERVER_DB = 'CDDST'
+SQLSERVER_HOST = os.getenv("SQLSERVER_HOST", '127.0.0.1')
+SQLSERVER_DB = os.getenv("SQLSERVER_DB")
+SQLSERVER_USERNAME = os.getenv("SQLSERVER_USERNAME")
+SQLSERVER_PASSWORD = os.getenv("SQLSERVER_PASSWORD")
 # ***************SqlServer数据库配置-end*********************
 
 
 # ***************MySQL数据库配置-start*********************
-# MYSQL_HOST = '192.168.0.112'
-MYSQL_HOST = '127.0.0.1'
-MYSQL_PORT = '3306'
-MYSQL_USERNAME = 'root'
-MYSQL_PASSWORD = 'root'
-MYSQL_DB = 'xdbx'
+MYSQL_HOST = os.getenv("MYSQL_HOST", '127.0.0.1')
+MYSQL_PORT = int(os.getenv("MYSQL_PORT", 3306))
+MYSQL_DB = os.getenv("MYSQL_DB")
+MYSQL_USERNAME = os.getenv("MYSQL_USERNAME")
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
 # ***************MySQL数据库配置-end*********************
