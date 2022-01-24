@@ -50,7 +50,10 @@ class MysqlDB:
         self.db = db
         self.username = username
         self.password = password
+        self.kwargs = kwargs
+        self.connect_sign = 0
 
+    def connect(self):
         try:
 
             self.connect_pool = PooledDB(
@@ -60,15 +63,16 @@ class MysqlDB:
                 maxconnections=100,
                 blocking=True,
                 ping=7,
-                host=host,
-                port=port,
-                user=username,
-                passwd=password,
-                db=db,
+                host=self.host,
+                port=self.port,
+                user=self.username,
+                passwd=self.password,
+                db=self.db,
                 charset="utf8mb4",
                 cursorclass=cursors.SSCursor,
-                **kwargs
+                **self.kwargs
             )  # cursorclass 使用服务的游标，默认的在多线程下大批量插入数据会使内存递增
+            self.connect_sign = 1
 
         except Exception as e:
             log.error(
@@ -81,11 +85,11 @@ class MysqlDB:
             password: {}
             exception: {}
             """.format(
-                    host, port, db, username, password, e
+                    self.host, self.port, self.db, self.username, self.password, e
                 )
             )
         else:
-            log.debug("连接到mysql数据库 %s : %s" % (host, db))
+            log.debug("连接到mysql数据库 %s : %s" % (self.host, self.db))
 
     @classmethod
     def from_url(cls, url, **kwargs):
@@ -127,6 +131,8 @@ class MysqlDB:
         return value
 
     def get_connection(self):
+        if not self.connect_sign:
+            self.connect()
         conn = self.connect_pool.connection(shareable=False)
         # cursor = conn.cursor(cursors.SSCursor)
         cursor = conn.cursor()
@@ -142,6 +148,8 @@ class MysqlDB:
         当前活跃的连接数
         @return:
         """
+        if not self.connect_sign:
+            self.connect()
         return self.connect_pool._connections
 
     def size_of_connect_pool(self):
@@ -149,6 +157,8 @@ class MysqlDB:
         池子里一共有多少连接
         @return:
         """
+        if not self.connect_sign:
+            self.connect()
         return len(self.connect_pool._idle_cache)
 
     def __create_table(self, cur, con, ite: dict, table: str, primary_key=None):
@@ -165,7 +175,7 @@ class MysqlDB:
         cur.execute(sql)
         table_sign = cur.fetchone()
         max_len = 767
-        if not table_sign:
+        if not cur.fetchone():
             # 生成创建字段信息
             primary_key_dict = {}
             if isinstance(primary_key, str):
@@ -186,7 +196,7 @@ class MysqlDB:
 
             end_field = list(item.keys())[-1]
             cur.execute('select version()')
-            mysql_version = table_sign[0]
+            mysql_version = cur.fetchone()[0]
             pk_field = ','.join([f'`{i}`' for i in primary_key_dict.keys()])
             # 解决版本不同创建语句差异问题
             if mysql_version[:3] <= '5.5':
@@ -196,7 +206,7 @@ class MysqlDB:
                         for field, values in primary_key_dict.items()
                     ]
                 )
-                field_info = ',,\n'.join([field_info, pk_info])
+                field_info = ',\n'.join([field_info, pk_info])
                 # 数据库版本小于等于5.5版本
                 sql_table = f'''create table {table}(
                         x_id bigint NOT NULL AUTO_INCREMENT,
