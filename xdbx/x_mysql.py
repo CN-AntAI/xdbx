@@ -381,7 +381,7 @@ class MysqlDB:
         sql = tools.x_sql.make_insert_sql(table, item, **kwargs)
         return self.add(sql, item, table, primary_key)
 
-    def insert_one(self, item: dict, table: str, primary_key: str = None, auto_table: bool = True):
+    def insert_one(self, item: dict, table: str, primary_key=None, auto_table: bool = True):
         '''
         插入一条数据
         :param item:
@@ -412,7 +412,7 @@ class MysqlDB:
             conn.close()
         pass
 
-    def add_batch(self, sql, datas: List[Dict]):
+    def add_batch(self, sql, datas: List[Dict], table, primary_key=None, auto_table: bool = True):
         """
         @summary: 批量添加数据
         ---------
@@ -425,6 +425,8 @@ class MysqlDB:
 
         try:
             conn, cursor = self.get_connection()
+            if auto_table:
+                self.__create_table(cur=cursor, con=conn, ite=datas[0], table=table, primary_key=primary_key)
             affect_count = cursor.executemany(sql, datas)
             conn.commit()
 
@@ -441,7 +443,7 @@ class MysqlDB:
 
         return affect_count
 
-    def insert_many(self, table, datas: List[Dict], **kwargs):
+    def insert_many(self, table, datas: List[Dict], primary_key: str = None, auto_table: bool = True, **kwargs):
         """
         批量添加数据, 直接传递list格式的数据，不用拼sql
         Args:
@@ -453,7 +455,7 @@ class MysqlDB:
 
         """
         sql, datas = tools.x_sql.make_batch_sql(table, datas, **kwargs)
-        return self.add_batch(sql, datas)
+        return self.add_batch(sql=sql, datas=datas, table=table, primary_key=primary_key, auto_table=auto_table)
 
     def update(self, sql):
         try:
@@ -475,18 +477,18 @@ class MysqlDB:
         finally:
             self.close_connection(conn, cursor)
 
-    def update_smart(self, table, data: Dict, condition):
+    def update_one(self, table, data: Dict, where):
         """
         更新, 不用拼sql
         Args:
             table: 表名
             data: 数据 {"xxx":"xxx"}
-            condition: 更新条件 where后面的条件，如 condition='status=1'
+            where: 更新条件 where后面的条件，如 where='status=1'
 
         Returns: True / False
 
         """
-        sql = tools.x_sql.make_update_sql(table, data, condition)
+        sql = tools.x_sql.make_update_sql(table, data, where)
         return self.update(sql)
 
     def delete(self, sql):
