@@ -9,6 +9,11 @@
 
 import os
 
+# ***************Elasticsearch配置-start*********************
+ES_HOST_PORT_LIST = os.getenv("ES_HOST_PORT_LIST")
+
+# ***************Elasticsearch配置-end*********************
+
 # ***************Kafka配置-start*********************
 KAFKA_HOST = os.getenv("KAFKA_HOST", '127.0.0.1')
 KAFKA_PORT = os.getenv("KAFKA_PORT", '9092')
