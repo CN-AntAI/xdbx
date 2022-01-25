@@ -20,10 +20,14 @@ class XKafka(metaclass=SingletonType):
         self.host = host
         self.port = port
         self.kafka_topic = kafka_topic
+        self.connect_sign = 0
+
+    def _connect(self):
         self.__producer = KafkaProducer(bootstrap_servers='{kafka_host}:{kafka_port}'.format(
             kafka_host=self.host,
             kafka_port=self.port,
         ))
+        return self.__producer
 
     def insert(self, item, **kwargs):
         '''
@@ -32,6 +36,8 @@ class XKafka(metaclass=SingletonType):
         :param kwargs:
         :return:
         '''
+        if not self.connect_sign:
+            self._connect()
         parmas_message = json.dumps(dict(item))
         try:
             self.__producer.send(topic=self.kafka_topic, value=parmas_message.encode('utf-8'), **kwargs)
