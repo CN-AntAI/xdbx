@@ -289,7 +289,7 @@ class MysqlDB:
                     print('Create Field Failed', e)
 
     @auto_retry
-    def find(self, sql, limit=0, to_json=False):
+    def find(self, sql, limit=0, to_json=True):
         """
         @summary:
         无数据： 返回()
