@@ -82,3 +82,6 @@ class XES(metaclass=SingletonType):
     def __init_excel(self):
         self.file_name = f'es_result_{self.batch_id}.xlsx'
         self.writer = pd.ExcelWriter(self.file_name, engine='xlsxwriter')
+
+
+x_es = XES()

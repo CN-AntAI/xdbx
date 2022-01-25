@@ -11,9 +11,9 @@
 
 - [x] Mysql
 - [x] SqlServer
+- [x] KafKa
+- [x] ElasticSearch
 - [ ] Mongo
-- [ ] KafKa
-- [ ] ElasticSearch
 
 ## 文件说明
 
