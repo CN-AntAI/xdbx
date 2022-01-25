@@ -6,7 +6,6 @@
 # @Email   : 18656170559@163.com
 # @Software: PyCharm
 # @Blog ：http://www.cnblogs.com/yunlongaimeng/
-import copy
 import hashlib
 import itertools
 import json
@@ -15,8 +14,8 @@ import math
 import pandas as pd
 from elasticsearch import Elasticsearch
 
-from config import ES_HOST_PORT_LIST
-from x_single import SingletonType
+from .config import ES_HOST_PORT_LIST
+from .x_single import SingletonType
 
 
 class XES(metaclass=SingletonType):
@@ -83,45 +82,3 @@ class XES(metaclass=SingletonType):
     def __init_excel(self):
         self.file_name = f'es_result_{self.batch_id}.xlsx'
         self.writer = pd.ExcelWriter(self.file_name, engine='xlsxwriter')
-
-    def run(self):
-        pass
-
-
-x_es = XES()
-x_es.index = 'colordata_eureka'
-x_es.host_port_list = ['120.92.150.128:9200']
-query_json = '''{
-  "size": 10, 
-  "query": {
-    "bool": {
-      "must": [
-        {
-          "range": {
-            "replyDate": {
-              "gte": "2022-01-12 00:00:00",
-              "lte": "2022-01-18 00:00:00",
-              "format": "yyyy-MM-dd HH:mm:ss"
-            }
-          }
-        }
-      ]
-    }
-  },"aggs": {
-    "CliendIds": {
-      "terms": {
-        "field": "ClientID",
-        "size": 1000
-      },"aggs": {
-        "days": {
-          "date_histogram": {
-            "field": "replyDate",
-            "interval": "day"
-          }
-        }
-      }
-    }
-  }
-}'''
-datas = x_es.query(query_json=query_json, to_excel=True)
-print(datas)
