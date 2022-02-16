@@ -171,11 +171,12 @@ class MysqlDB:
         item = copy.deepcopy(ite)
         # cur = self.__get_connect()
         # 判断是否存在该表
-        sql = f'''select * from information_schema.tables where table_name ='{table}';'''
+        sql = f'''show tables; '''
         cur.execute(sql)
-        table_sign = cur.fetchone()
+        tables = cur.fetchall()
+        table_sign = True if table in [i[0] for i in tables] else False
         max_len = 767
-        if not cur.fetchone():
+        if not table_sign:
             # 生成创建字段信息
             primary_key_dict = {}
             if isinstance(primary_key, str):
@@ -194,7 +195,7 @@ class MysqlDB:
                 ]
             )
 
-            end_field = list(item.keys())[-1]
+            # end_field = list(item.keys())[-1]
             cur.execute('select version()')
             mysql_version = cur.fetchone()[0]
             pk_field = ','.join([f'`{i}`' for i in primary_key_dict.keys()])
@@ -206,16 +207,22 @@ class MysqlDB:
                         for field, values in primary_key_dict.items()
                     ]
                 )
-                field_info = ',\n'.join([field_info, pk_info])
+                field_info = ',\n'.join([field_info, pk_info]) if pk_info else field_info
                 # 数据库版本小于等于5.5版本
                 sql_table = f'''create table {table}(
                         x_id bigint NOT NULL AUTO_INCREMENT,
                         x_inserttime timestamp NULL DEFAULT CURRENT_TIMESTAMP,
---                         x_updatetime timestamp NULL DEFAULT '0000-00-00 00:00:00',
                         {field_info},
-                        INDEX (x_id),
                         PRIMARY KEY ({pk_field})
                         )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;'''
+                if primary_key:
+                    sql_table = f'''create table {table}(
+                                            x_id bigint NOT NULL AUTO_INCREMENT,
+                                            x_inserttime timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+                                            {field_info},
+                                            INDEX (x_id),
+                                            PRIMARY KEY ({pk_field})
+                                            )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;'''
                 # --创建update触发器
                 # sql_trigger = f'''CREATE TRIGGER trig_{table}_updatetime
                 #                   BEFORE UPDATE ON {table} FOR EACH ROW
@@ -244,7 +251,7 @@ class MysqlDB:
                             for field, values in primary_key_dict.items()
                         ]
                     )
-                    field_info = ',,\n'.join([field_info, pk_info])
+                    field_info = ',\n'.join([field_info, pk_info]) if pk_info else field_info
                     sql_table = f'''create table {table}(
                                 x_id bigint NOT NULL AUTO_INCREMENT,
                                 x_inserttime timestamp NULL DEFAULT CURRENT_TIMESTAMP,
