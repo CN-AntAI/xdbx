@@ -474,26 +474,6 @@ class MysqlDB:
         sql, datas = tools.x_sql.make_batch_sql(table, datas, **kwargs)
         return self.add_batch(sql=sql, datas=datas, table=table, primary_key=primary_key, auto_table=auto_table)
 
-    def update(self, sql):
-        try:
-            conn, cursor = self.get_connection()
-            cursor.execute(sql)
-            conn.commit()
-
-        except Exception as e:
-            log.error(
-                """
-                error:%s
-                sql:  %s
-            """
-                % (e, sql)
-            )
-            return False
-        else:
-            return True
-        finally:
-            self.close_connection(conn, cursor)
-
     def update_one(self, table, data: Dict, where):
         """
         更新, 不用拼sql
@@ -506,7 +486,7 @@ class MysqlDB:
 
         """
         sql = tools.x_sql.make_update_sql(table, data, where)
-        return self.update(sql)
+        return self.execute(sql)
 
     def delete(self, sql):
         """
@@ -541,7 +521,6 @@ class MysqlDB:
             conn, cursor = self.get_connection()
             cursor.execute(sql)
             conn.commit()
-
         except Exception as e:
             log.error(
                 """

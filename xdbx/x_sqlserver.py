@@ -200,7 +200,39 @@ class SqlServerPipeline(metaclass=SingletonType):
             cur.close()
             self.connect.close()
 
-    def update(self, sql):
+    def update_one(self, table, data: Dict, where):
+        """
+        更新, 不用拼sql
+        Args:
+            table: 表名
+            data: 数据 {"xxx":"xxx"}
+            where: 更新条件 where后面的条件，如 where='status=1'
+
+        Returns: True / False
+
+        """
+        sql = tools.x_sql.make_update_sql(table, data, where)
+        return self.execute(sql)
+
+    def find(self, sql: str):
+        '''
+        通过sql查询对应的数据结果
+        :param sql: sql语句
+        :return:
+        '''
+        cur = self.__get_connect()
+        try:
+            cur.execute(sql)
+            desc = cur.description
+            result = (dict(zip((d[0] for d in desc), data)) for data in cur.fetchall())
+            return result
+        except Exception as e:
+            print('Find Data Failed:', e)
+        finally:
+            cur.close()
+            self.connect.close()
+
+    def execute(self, sql):
         try:
             cur = self.__get_connect()
             cur.execute(sql)
@@ -217,38 +249,6 @@ class SqlServerPipeline(metaclass=SingletonType):
             return False
         else:
             return True
-        finally:
-            cur.close()
-            self.connect.close()
-
-    def update_one(self, table, data: Dict, where):
-        """
-        更新, 不用拼sql
-        Args:
-            table: 表名
-            data: 数据 {"xxx":"xxx"}
-            where: 更新条件 where后面的条件，如 where='status=1'
-
-        Returns: True / False
-
-        """
-        sql = tools.x_sql.make_update_sql(table, data, where)
-        return self.update(sql)
-
-    def find(self, sql: str):
-        '''
-        通过sql查询对应的数据结果
-        :param sql: sql语句
-        :return:
-        '''
-        cur = self.__get_connect()
-        try:
-            cur.execute(sql)
-            desc = cur.description
-            result = (dict(zip((d[0] for d in desc), data)) for data in cur.fetchall())
-            return result
-        except Exception as e:
-            print('Find Data Failed:', e)
         finally:
             cur.close()
             self.connect.close()
