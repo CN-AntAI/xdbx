@@ -213,7 +213,7 @@ class MysqlDB:
                         x_id bigint NOT NULL AUTO_INCREMENT,
                         x_inserttime timestamp NULL DEFAULT CURRENT_TIMESTAMP,
                         {field_info},
-                        PRIMARY KEY ({pk_field})
+                        PRIMARY KEY (`x_id`)
                         )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;'''
                 if primary_key:
                     sql_table = f'''create table {table}(
