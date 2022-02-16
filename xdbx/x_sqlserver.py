@@ -7,11 +7,14 @@
 # @Software: PyCharm
 # @Blog ：http://www.cnblogs.com/yunlongaimeng/
 import copy
+from typing import Dict
 
 import pymssql
 
 from .config import SQLSERVER_HOST, SQLSERVER_USERNAME, SQLSERVER_PASSWORD, SQLSERVER_DB
 from .x_single import SingletonType
+import logging as log
+from pyxbox import tools
 
 
 class SqlServerPipeline(metaclass=SingletonType):
@@ -196,6 +199,41 @@ class SqlServerPipeline(metaclass=SingletonType):
         finally:
             cur.close()
             self.connect.close()
+
+    def update(self, sql):
+        try:
+            cur = self.__get_connect()
+            cur.execute(sql)
+            self.connect.commit()
+
+        except Exception as e:
+            log.error(
+                """
+                error:%s
+                sql:  %s
+            """
+                % (e, sql)
+            )
+            return False
+        else:
+            return True
+        finally:
+            cur.close()
+            self.connect.close()
+
+    def update_one(self, table, data: Dict, where):
+        """
+        更新, 不用拼sql
+        Args:
+            table: 表名
+            data: 数据 {"xxx":"xxx"}
+            where: 更新条件 where后面的条件，如 where='status=1'
+
+        Returns: True / False
+
+        """
+        sql = tools.x_sql.make_update_sql(table, data, where)
+        return self.update(sql)
 
     def find(self, sql: str):
         '''
