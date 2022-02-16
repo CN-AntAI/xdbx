@@ -429,7 +429,7 @@ class MysqlDB:
             conn.close()
         pass
 
-    def add_batch(self, sql, datas: List[Dict], table, primary_key=None, auto_table: bool = True):
+    def insert_many(self, items: List[Dict], table, primary_key=None, auto_table: bool = True, **kwargs):
         """
         @summary: 批量添加数据
         ---------
@@ -439,40 +439,21 @@ class MysqlDB:
         @result: 添加行数
         """
         affect_count = None
-
         try:
             conn, cursor = self.get_connection()
             if auto_table:
-                self.__create_table(cur=cursor, con=conn, ite=datas[0], table=table, primary_key=primary_key)
-            affect_count = cursor.executemany(sql, datas)
+                self.__create_table(cur=cursor, con=conn, ite=items[0], table=table, primary_key=primary_key)
+            sql, values = tools.x_sql.make_batch_sql(table, items, **kwargs)
+            affect_count = cursor.executemany(sql, values)
             conn.commit()
+            print('Insert Many Successful')
 
         except Exception as e:
-            log.error(
-                """
-                error:%s
-                sql:  %s
-                """
-                % (e, sql)
-            )
+            print('Insert Many Failed:', e)
         finally:
             self.close_connection(conn, cursor)
 
         return affect_count
-
-    def insert_many(self, table, datas: List[Dict], primary_key: str = None, auto_table: bool = True, **kwargs):
-        """
-        批量添加数据, 直接传递list格式的数据，不用拼sql
-        Args:
-            table: 表名
-            datas: 列表 [{}, {}, {}]
-            **kwargs:
-
-        Returns: 添加行数
-
-        """
-        sql, datas = tools.x_sql.make_batch_sql(table, datas, **kwargs)
-        return self.add_batch(sql=sql, datas=datas, table=table, primary_key=primary_key, auto_table=auto_table)
 
     def update_one(self, table, data: Dict, where):
         """
@@ -488,33 +469,6 @@ class MysqlDB:
         sql = tools.x_sql.make_update_sql(table, data, where)
         return self.execute(sql)
 
-    def delete(self, sql):
-        """
-        删除
-        Args:
-            sql:
-
-        Returns: True / False
-
-        """
-        try:
-            conn, cursor = self.get_connection()
-            cursor.execute(sql)
-            conn.commit()
-
-        except Exception as e:
-            log.error(
-                """
-                error:%s
-                sql:  %s
-            """
-                % (e, sql)
-            )
-            return False
-        else:
-            return True
-        finally:
-            self.close_connection(conn, cursor)
 
     def execute(self, sql):
         try:
