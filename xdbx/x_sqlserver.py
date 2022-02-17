@@ -7,7 +7,7 @@
 # @Software: PyCharm
 # @Blog ：http://www.cnblogs.com/yunlongaimeng/
 import copy
-from typing import Dict
+from typing import Dict, List
 
 import pymssql
 
@@ -111,7 +111,7 @@ class SqlServerPipeline(metaclass=SingletonType):
                 log.info('Create Table Successful')
             except Exception as e:
                 # print('Create Table Failed', e)
-                log.error('Create Table Failed'+str(e))
+                log.error('Create Table Failed' + str(e))
         else:
             # 查询表字段
             select_fields_sql = f'''SELECT Name FROM SysColumns WHERE id=Object_Id('{table}')'''
@@ -140,7 +140,44 @@ class SqlServerPipeline(metaclass=SingletonType):
                     log.info('Create Field Successful')
                 except Exception as e:
                     print('Create Field Failed', e)
-                    log.error('Create Field Failed'+str(e))
+                    log.error('Create Field Failed' + str(e))
+
+    def upsert(self, item: Dict, table: str, primary_key):
+        """
+        添加数据, 直接传递json格式的数据，不用拼sql
+        Args:
+            table: 表名
+            item: 字典 {"xxx":"xxx"}
+            **kwargs:
+            @param auto_update: 使用的是replace into， 为完全覆盖已存在的数据
+            @param update_columns: 需要更新的列 默认全部，当指定值时，auto_update设置无效，当duplicate key冲突时更新指定的列
+            @param insert_ignore: 数据存在忽略
+        Returns: 添加行数
+        """
+        cur = self.__get_connect()
+        self.__create_table(cur=cur, ite=item, table=table, primary_key=primary_key)
+        where = f"{primary_key} = {item.get(primary_key)}"
+        update_sql = tools.x_sql.make_update_sql(table, item, where)
+        insert_sql = '''INSERT INTO {table} ({keys}) VALUES ({values})'''.format(table=table,
+                                                                                 keys=','.join(item.keys()),
+                                                                                 values=','.join(item.values()))
+        sql = f'''IF EXISTS(SELECT* FROM 
+                    {table} WHERE {where})
+                    
+                    BEGIN
+                    
+                    {update_sql}
+                    
+                    END
+                    
+                    ELSE
+                    
+                    BEGIN
+                    
+                    {insert_sql}
+                    
+                    END'''
+        return self.execute(sql=sql)
 
     def insert_one(self, item: dict, table: str, primary_key: str = None):
         '''
@@ -167,7 +204,7 @@ class SqlServerPipeline(metaclass=SingletonType):
             self.connect.commit()
         except Exception as e:
             # print('Insert One Failed,', e)
-            log.error('Insert One Failed,'+str(e))
+            log.error('Insert One Failed,' + str(e))
             self.connect.rollback()
         finally:
             cur.close()
@@ -203,12 +240,12 @@ class SqlServerPipeline(metaclass=SingletonType):
         except Exception as e:
             self.connect.rollback()
             # print('Insert Many Failed:', e)
-            log.error('Insert Many Failed:'+str(e))
+            log.error('Insert Many Failed:' + str(e))
         finally:
             cur.close()
             self.connect.close()
 
-    def update_one(self, table, data: Dict, where):
+    def update(self, table, item: Dict, where):
         """
         更新, 不用拼sql
         Args:
@@ -219,7 +256,7 @@ class SqlServerPipeline(metaclass=SingletonType):
         Returns: True / False
 
         """
-        sql = tools.x_sql.make_update_sql(table, data, where)
+        sql = tools.x_sql.make_update_sql(table, item, where)
         return self.execute(sql)
 
     def find(self, sql: str):
@@ -235,7 +272,7 @@ class SqlServerPipeline(metaclass=SingletonType):
             result = (dict(zip((d[0] for d in desc), data)) for data in cur.fetchall())
             return result
         except Exception as e:
-            log.error('Find Data Failed:'+str(e))
+            log.error('Find Data Failed:' + str(e))
             raise e
         finally:
             cur.close()
