@@ -383,16 +383,17 @@ class MysqlDB:
 
         return affect_count
 
-    def new_insert_one(self, item: Dict, table: str, primary_key, **kwargs):
+    def upsert(self, item: Dict, table: str, primary_key, **kwargs):
         """
         添加数据, 直接传递json格式的数据，不用拼sql
         Args:
             table: 表名
             item: 字典 {"xxx":"xxx"}
             **kwargs:
-
+            @param auto_update: 使用的是replace into， 为完全覆盖已存在的数据
+            @param update_columns: 需要更新的列 默认全部，当指定值时，auto_update设置无效，当duplicate key冲突时更新指定的列
+            @param insert_ignore: 数据存在忽略
         Returns: 添加行数
-
         """
 
         sql = tools.x_sql.make_insert_sql(table, item, **kwargs)
@@ -455,7 +456,7 @@ class MysqlDB:
 
         return affect_count
 
-    def update_one(self, table, data: Dict, where):
+    def update(self, table, item: Dict, where):
         """
         更新, 不用拼sql
         Args:
@@ -466,9 +467,8 @@ class MysqlDB:
         Returns: True / False
 
         """
-        sql = tools.x_sql.make_update_sql(table, data, where)
+        sql = tools.x_sql.make_update_sql(table, item, where)
         return self.execute(sql)
-
 
     def execute(self, sql):
         try:
