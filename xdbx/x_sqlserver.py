@@ -107,9 +107,11 @@ class SqlServerPipeline(metaclass=SingletonType):
                 cur.execute(sql_table)
                 cur.execute(sql_trigger)
                 self.connect.commit()
-                print('Create Table Successful')
+                # print('Create Table Successful')
+                log.info('Create Table Successful')
             except Exception as e:
-                print('Create Table Failed', e)
+                # print('Create Table Failed', e)
+                log.error('Create Table Failed'+str(e))
         else:
             # 查询表字段
             select_fields_sql = f'''SELECT Name FROM SysColumns WHERE id=Object_Id('{table}')'''
@@ -134,9 +136,11 @@ class SqlServerPipeline(metaclass=SingletonType):
                     # print(add_fields_sql)
                     cur.execute(add_fields_sql)
                     self.connect.commit()
-                    print('Create Field Successful')
+                    # print('Create Field Successful')
+                    log.info('Create Field Successful')
                 except Exception as e:
                     print('Create Field Failed', e)
+                    log.error('Create Field Failed'+str(e))
 
     def insert_one(self, item: dict, table: str, primary_key: str = None):
         '''
@@ -158,10 +162,12 @@ class SqlServerPipeline(metaclass=SingletonType):
             data = [str(v) for v in item.values()]
             # print(data)
             cur.execute(sql, tuple(data))
-            print('Insert One Successful')
+            # print('Insert One Successful')
+            log.info('Insert One Successful')
             self.connect.commit()
         except Exception as e:
-            print('Insert One Failed,', e)
+            # print('Insert One Failed,', e)
+            log.error('Insert One Failed,'+str(e))
             self.connect.rollback()
         finally:
             cur.close()
@@ -192,10 +198,12 @@ class SqlServerPipeline(metaclass=SingletonType):
         try:
             cur.executemany(sql, datas)
             self.connect.commit()
-            print('Insert Many Successful')
+            # print('Insert Many Successful')
+            log.info('Insert Many Successful')
         except Exception as e:
             self.connect.rollback()
-            print('Insert Many Failed:', e)
+            # print('Insert Many Failed:', e)
+            log.error('Insert Many Failed:'+str(e))
         finally:
             cur.close()
             self.connect.close()
@@ -227,7 +235,8 @@ class SqlServerPipeline(metaclass=SingletonType):
             result = (dict(zip((d[0] for d in desc), data)) for data in cur.fetchall())
             return result
         except Exception as e:
-            print('Find Data Failed:', e)
+            log.error('Find Data Failed:'+str(e))
+            raise e
         finally:
             cur.close()
             self.connect.close()

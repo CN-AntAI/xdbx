@@ -291,9 +291,12 @@ class MysqlDB:
                     # print(add_fields_sql)
                     cur.execute(add_fields_sql)
                     con.commit()
-                    print('Create Field Successful')
+                    # print('Create Field Successful')
+                    log.info('Create Field Successful')
                 except Exception as e:
-                    print('Create Field Failed', e)
+                    # print('Create Field Failed', e)
+                    log.error('Create Field Failed' + str(e))
+                    # raise e
 
     @auto_retry
     def find(self, sql, limit=0, to_json=True):
@@ -420,7 +423,8 @@ class MysqlDB:
             data = [str(v) for v in item.values()]
             # print(data)
             cursor.execute(sql, tuple(data))
-            print('Insert One Successful')
+            # print('Insert One Successful')
+            log.info('Insert One Successful')
             conn.commit()
         except Exception as e:
             conn.rollback()
@@ -447,10 +451,12 @@ class MysqlDB:
             sql, values = tools.x_sql.make_batch_sql(table, items, **kwargs)
             affect_count = cursor.executemany(sql, values)
             conn.commit()
-            print('Insert Many Successful')
+            # print('Insert Many Successful')
+            log.info('Insert Many Successful')
 
         except Exception as e:
-            print('Insert Many Failed:', e)
+            # print('Insert Many Failed:', e)
+            log.error('Insert Many Failed:'+str(e))
         finally:
             self.close_connection(conn, cursor)
 
