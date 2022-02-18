@@ -139,7 +139,7 @@ class SqlServerPipeline(metaclass=SingletonType):
                     # print('Create Field Successful')
                     log.info('Create Field Successful')
                 except Exception as e:
-                    print('Create Field Failed', e)
+                    # print('Create Field Failed', e)
                     log.error('Create Field Failed' + str(e))
 
     def upsert(self, item: Dict, table: str, primary_key):
@@ -149,18 +149,13 @@ class SqlServerPipeline(metaclass=SingletonType):
             table: 表名
             item: 字典 {"xxx":"xxx"}
             **kwargs:
-            @param auto_update: 使用的是replace into， 为完全覆盖已存在的数据
-            @param update_columns: 需要更新的列 默认全部，当指定值时，auto_update设置无效，当duplicate key冲突时更新指定的列
-            @param insert_ignore: 数据存在忽略
-        Returns: 添加行数
+        Returns: 是否对错
         """
         cur = self.__get_connect()
         self.__create_table(cur=cur, ite=item, table=table, primary_key=primary_key)
         where = f"{primary_key} = {item.get(primary_key)}"
         update_sql = tools.x_sql.make_update_sql(table, item, where)
-        insert_sql = '''INSERT INTO {table} ({keys}) VALUES ({values})'''.format(table=table,
-                                                                                 keys=','.join(item.keys()),
-                                                                                 values=','.join(item.values()))
+        insert_sql = tools.x_sql.make_insert_sql(table, item)
         sql = f'''IF EXISTS(SELECT* FROM 
                     {table} WHERE {where})
                     
@@ -250,7 +245,7 @@ class SqlServerPipeline(metaclass=SingletonType):
         更新, 不用拼sql
         Args:
             table: 表名
-            data: 数据 {"xxx":"xxx"}
+            item: 数据 {"xxx":"xxx"}
             where: 更新条件 where后面的条件，如 where='status=1'
 
         Returns: True / False

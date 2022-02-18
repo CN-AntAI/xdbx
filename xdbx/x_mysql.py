@@ -439,7 +439,7 @@ class MysqlDB:
         @summary: 批量添加数据
         ---------
         @ param sql: insert ignore into (xxx,xxx) values (%s, %s, %s)
-        # param datas: 列表 [{}, {}, {}]
+        # param items: 列表 [{}, {}, {}]
         ---------
         @result: 添加行数
         """
@@ -467,7 +467,7 @@ class MysqlDB:
         更新, 不用拼sql
         Args:
             table: 表名
-            data: 数据 {"xxx":"xxx"}
+            item: 数据 {"xxx":"xxx"}
             where: 更新条件 where后面的条件，如 where='status=1'
 
         Returns: True / False
