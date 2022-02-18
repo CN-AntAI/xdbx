@@ -112,6 +112,7 @@ class SqlServerPipeline(metaclass=SingletonType):
             except Exception as e:
                 # print('Create Table Failed', e)
                 log.error('Create Table Failed' + str(e))
+                raise e
         else:
             # 查询表字段
             select_fields_sql = f'''SELECT Name FROM SysColumns WHERE id=Object_Id('{table}')'''
@@ -141,6 +142,7 @@ class SqlServerPipeline(metaclass=SingletonType):
                 except Exception as e:
                     # print('Create Field Failed', e)
                     log.error('Create Field Failed' + str(e))
+                    raise e
 
     def upsert(self, item: Dict, table: str, primary_key):
         """
@@ -202,6 +204,7 @@ class SqlServerPipeline(metaclass=SingletonType):
             # print('Insert One Failed,', e)
             log.error('Insert One Failed,' + str(e))
             self.connect.rollback()
+            raise e
         finally:
             cur.close()
             self.connect.close()
@@ -237,6 +240,7 @@ class SqlServerPipeline(metaclass=SingletonType):
             self.connect.rollback()
             # print('Insert Many Failed:', e)
             log.error('Insert Many Failed:' + str(e))
+            raise e
         finally:
             cur.close()
             self.connect.close()
@@ -288,7 +292,7 @@ class SqlServerPipeline(metaclass=SingletonType):
             """
                 % (e, sql)
             )
-            return False
+            raise e
         else:
             return True
         finally:

@@ -88,6 +88,7 @@ class MysqlDB:
                     self.host, self.port, self.db, self.username, self.password, e
                 )
             )
+            raise e
         else:
             log.debug("连接到mysql数据库 %s : %s" % (self.host, self.db))
 
@@ -233,9 +234,10 @@ class MysqlDB:
                     cur.execute(sql_table)
                     # cur.execute(sql_trigger)
                     con.commit()
-                    print(f'Mysql Version is :{mysql_version}', '*' * 15, 'Create Table Successful')
+                    log.info(''.join([f'Mysql Version is :{mysql_version}', '*' * 15, 'Create Table Successful']))
                 except Exception as e:
-                    print(f'Mysql Version is :{mysql_version}', '*' * 15, 'Create Table Failed', e)
+                    # print(f'Mysql Version is :{mysql_version}', '*' * 15, 'Create Table Failed', e)
+                    log.error(''.join([f'Mysql Version is :{mysql_version}', '*' * 15, 'Create Table Failed', str(e)]))
             else:
                 sql_table = f'''create table {table}(
                                 x_id bigint NOT NULL AUTO_INCREMENT,
@@ -264,9 +266,11 @@ class MysqlDB:
                     # print(sql_table)
                     cur.execute(sql_table)
                     con.commit()
-                    print(f'Mysql Version is :{mysql_version}', '*' * 15, 'Create Table Successful')
+                    # print(f'Mysql Version is :{mysql_version}', '*' * 15, 'Create Table Successful')
+                    log.info(''.join([f'Mysql Version is :{mysql_version}', '*' * 15, 'Create Table Successful']))
                 except Exception as e:
-                    print(f'Mysql Version is :{mysql_version}', '*' * 15, 'Create Table Failed', e)
+                    # print(f'Mysql Version is :{mysql_version}', '*' * 15, 'Create Table Failed', e)
+                    log.error(''.join([f'Mysql Version is :{mysql_version}', '*' * 15, 'Create Table Failed', str(e)]))
         else:
             # 查询表字段
             select_fields_sql = f'''desc {table}'''
@@ -381,6 +385,7 @@ class MysqlDB:
             )
             if exception_callfunc:
                 exception_callfunc(e)
+            raise e
         finally:
             self.close_connection(conn, cursor)
 
@@ -456,7 +461,8 @@ class MysqlDB:
 
         except Exception as e:
             # print('Insert Many Failed:', e)
-            log.error('Insert Many Failed:'+str(e))
+            log.error('Insert Many Failed:' + str(e))
+            raise e
         finally:
             self.close_connection(conn, cursor)
 
@@ -489,7 +495,7 @@ class MysqlDB:
             """
                 % (e, sql)
             )
-            return False
+            raise e
         else:
             return True
         finally:
