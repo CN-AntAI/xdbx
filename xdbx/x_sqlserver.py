@@ -153,7 +153,8 @@ class SqlServerPipeline(metaclass=SingletonType):
         """
         cur = self.__get_connect()
         self.__create_table(cur=cur, ite=item, table=table, primary_key=primary_key)
-        where = f"{primary_key} = {item.get(primary_key)}"
+        v = repr(item.get(primary_key))
+        where = f"{primary_key} = {v}"
         update_sql = tools.x_sql.make_update_sql(table, item, where)
         insert_sql = tools.x_sql.make_insert_sql(table, item)
         sql = f'''IF EXISTS(SELECT* FROM 
@@ -171,7 +172,7 @@ class SqlServerPipeline(metaclass=SingletonType):
                     
                     {insert_sql}
                     
-                    END'''
+                    END'''.replace('`', '')
         return self.execute(sql=sql)
 
     def insert_one(self, item: dict, table: str, primary_key: str = None):
