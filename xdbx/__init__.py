@@ -8,7 +8,5 @@
 # @Blog ：http://www.cnblogs.com/yunlongaimeng/
 from .x_mysql import x_mysql
 from .x_sqlserver import x_mssql
-from .x_es import x_es
-from .x_kafka import x_kafka
 
-__all__ = ['x_mysql', 'x_mssql', 'x_es', 'x_kafka']
+__all__ = ['x_mysql', 'x_mssql']

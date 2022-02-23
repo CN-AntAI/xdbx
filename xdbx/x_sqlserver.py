@@ -256,7 +256,7 @@ class SqlServerPipeline(metaclass=SingletonType):
         Returns: True / False
 
         """
-        sql = tools.x_sql.make_update_sql(table, item, where)
+        sql = tools.x_sql.make_update_sql(table, item, where).replace('`', '')
         return self.execute(sql)
 
     def find(self, sql: str):
