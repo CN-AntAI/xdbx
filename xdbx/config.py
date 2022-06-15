@@ -24,7 +24,8 @@ KAFKA_PARTITION = os.getenv("KAFKA_PARTITION")
 
 # ***************mongo数据库配置-start*********************
 MONGO_HOST = os.getenv("MONGO_HOST", "localhost")
-MONGO_PORT = int(os.getenv("MONGO_PORT", 27017))
+port_temp = os.getenv("MONGO_PORT", 27017)
+MONGO_PORT = int(port_temp) if port_temp and isinstance(port_temp, int) else 27017
 MONGO_DB = os.getenv("MONGO_DB")
 MONGO_USERNAME = os.getenv("MONGO_USER_NAME")
 MONGO_PASSWORD = os.getenv("MONGO_USER_PASS")
