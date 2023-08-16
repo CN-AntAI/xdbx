@@ -11,6 +11,7 @@
 
 - [x] Mysql
 - [x] SqlServer
+- [x] Postgres
 - [x] KafKa
 - [x] ElasticSearch
 - [ ] Mongo
@@ -31,6 +32,9 @@
 ## MySQL
 
 > 将MySQL进行了封装，会自动智能的去创建一些表和字段相关的东西，会省爬虫开发者一些时间。因为mysql<=5.5版本可能有些创建更新时间不稳定的问题，我已经把相关的代码先暂时不开放，如果有更好的方案我们再优化一下。
+
+## PostgreSQL
+> 将PostgreSQL进行了封装，会自动智能的去创建一些表和字段相关的东西，会省爬虫开发者一些时间。
 
 ## Kafka
 

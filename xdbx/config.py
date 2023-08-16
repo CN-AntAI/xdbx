@@ -46,3 +46,11 @@ MYSQL_DB = os.getenv("MYSQL_DB")
 MYSQL_USERNAME = os.getenv("MYSQL_USERNAME")
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
 # ***************MySQL数据库配置-end*********************
+
+# ***************Postgres数据库配置-start*********************
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", '127.0.0.1')
+POSTGRES_PORT = int(os.getenv("POSTGRES_PORT", 5432))
+POSTGRES_DB = os.getenv("POSTGRES_DB")
+POSTGRES_USERNAME = os.getenv("POSTGRES_USERNAME")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+# ***************Postgres数据库配置-end*********************

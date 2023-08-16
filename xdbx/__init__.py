@@ -8,5 +8,6 @@
 # @Blog ：http://www.cnblogs.com/yunlongaimeng/
 from .x_mysql import x_mysql
 from .x_sqlserver import x_mssql
+from .x_postgres import x_pgsql
 
-__all__ = ['x_mysql', 'x_mssql']
+__all__ = ['x_mysql', 'x_mssql', 'x_pgsql']
