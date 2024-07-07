@@ -66,9 +66,9 @@ x_mysql.insert_many(items=[{'a': 1, 'b': 2}, {'a': 1, 'b': 2}, {'a': 1, 'b': 2},
                     table='ceshi_20211229')
 ```
 
-## 4. 使用方法
+## 使用方法
 
-### 4.1 Elasticsearch 交互
+### Elasticsearch 交互
 
 使用`XES`类与Elasticsearch进行交互。示例代码如下：
 
@@ -86,7 +86,7 @@ results = es.query(query_json)
 es.query(query_json, to_excel=True)
 ```
 
-### 4.2 Kafka 交互
+### Kafka 交互
 
 > 将Kafka进行了封装,对平时我们爬虫的一些常规数据存储做操作，利用单例模式开发支持多线程操作【加锁】 使用`XKafka`类与Kafka进行交互。示例代码如下：
 
@@ -101,7 +101,7 @@ message = {'key': 'value'}
 kafka_producer.insert(message)
 ```
 
-### 4.3 SQL Server 交互
+### SQL Server 交互
 
 > 将SqlServer进行了封装，会自动智能的去创建一些表和字段相关的东西，会省爬虫开发者一些时间 使用`SqlServerPipeline`类与SQL Server进行交互。示例代码如下：
 
@@ -117,7 +117,7 @@ table = 'your_table_name'
 sql_server.insert_one(item, table)
 ```
 
-### 4.4 PostgreSQL 交互
+### PostgreSQL 交互
 
 > 将PostgreSQL进行了封装，会自动智能的去创建一些表和字段相关的东西，会省爬虫开发者一些时间。 使用`PostgrePipeline`类与PostgreSQL进行交互。示例代码如下：
 
@@ -132,7 +132,7 @@ sql = 'SELECT * FROM your_table'
 results = postgres.find(sql)
 ```
 
-### 4.5 MySQL 交互
+### MySQL 交互
 
 > 将MySQL进行了封装，会自动智能的去创建一些表和字段相关的东西，会省爬虫开发者一些时间。因为mysql<=5.5版本可能有些创建更新时间不稳定的问题，我已经把相关的代码先暂时不开放，如果有更好的方案我们再优化一下。 使用`MysqlDB`类与MySQL进行交互。示例代码如下：
 
@@ -147,11 +147,11 @@ sql = 'SELECT * FROM your_table'
 results = mysql.find(sql)
 ```
 
-## 5. 错误处理
+## 错误处理
 
 在使用过程中，如果遇到连接错误或查询错误，请检查配置文件中的连接信息是否正确，并查看日志输出的错误详情。
 
-## 6. 联系我们
+## 联系我们
 
 如果有任何问题或需要进一步的帮助，请联系我们。
 
