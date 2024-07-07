@@ -5,16 +5,30 @@
 > 目前每次我们存数据库的时候都会有这样的问题，所有的数据在同步。或者说在入库时我们需要写入库的相关代码【day by day】，本着：`DRY - Don't Repeat Yourself(不要重复你自己)`原则于是我想到了我们可以异步及批量数据操作器。
 
 ## 项目构想
+
 - 我们只需要关注数据的问题，不用再太多费心操作相关的创建表，修改表相关字段问题
 
 ## 项目支持的数据库类型
 
-- [x] Mysql
+- [x] MySQL
 - [x] SqlServer
-- [x] Postgres
+- [x] PostgreSQL
 - [x] KafKa
 - [x] ElasticSearch
-- [ ] Mongo
+
+## 实现的功能
+- [x] 智能创建表和字段
+- [x] 批量数据插入操作
+- [x] 操作数据同一个表字段不同时，会到表中智能增加字段
+- [x] 支持数据库的连接参数重写操作
+
+## 配置文件
+
+在`config.py`文件中配置数据库和消息队列的连接信息。您需要设置如下环境变量：
+
+- `ES_HOST_PORT_LIST`: Elasticsearch的主机和端口列表。
+- `KAFKA_HOST`, `KAFKA_PORT`, `KAFKA_TOPIC`: Kafka的主机、端口和主题。
+- 数据库相关配置（如SQL Server、PostgreSQL、MySQL）。
 
 ## 文件说明
 
@@ -24,21 +38,6 @@
 - x_mysql.py文件用来存储处理x_mysql数据的管道
 - x_kafka.py文件用来存储处理kafka数据的管道
 - x_mongo.py文件用来存储处理Mongo数据的管道
-
-## SqlServer
-
-> 将SqlServer进行了封装，会自动智能的去创建一些表和字段相关的东西，会省爬虫开发者一些时间
-
-## MySQL
-
-> 将MySQL进行了封装，会自动智能的去创建一些表和字段相关的东西，会省爬虫开发者一些时间。因为mysql<=5.5版本可能有些创建更新时间不稳定的问题，我已经把相关的代码先暂时不开放，如果有更好的方案我们再优化一下。
-
-## PostgreSQL
-> 将PostgreSQL进行了封装，会自动智能的去创建一些表和字段相关的东西，会省爬虫开发者一些时间。
-
-## Kafka
-
-> 将Kafka进行了封装,对平时我们爬虫的一些常规数据存储做操作，利用单例模式开发支持多线程操作【加锁】
 
 ## 基本实例
 
@@ -67,17 +66,95 @@ x_mysql.insert_many(items=[{'a': 1, 'b': 2}, {'a': 1, 'b': 2}, {'a': 1, 'b': 2},
                     table='ceshi_20211229')
 ```
 
-## TODO-LIST
+## 4. 使用方法
 
-- [x] 支持数据库的连接参数重写操作
-- [x] 智能创建表和字段
-- [x] 操作数据同一个表字段不同时，会到表中智能增加字段
-- [x] 批量数据插入操作
-- [x] 支持单例多线程加锁操作
-- [ ] 创建表时会自动报警钉钉通知消息
-- [x] 添加查询功能
-- [x] 添加更新功能
-- [x] 添加主键功能支持字符串,字典和列表类型
+### 4.1 Elasticsearch 交互
+
+使用`XES`类与Elasticsearch进行交互。示例代码如下：
+
+```python
+from xdbx import x_es
+
+# 实例化并连接Elasticsearch
+es = x_es.connect()
+
+# 执行查询
+query_json = '{"query": {"match_all": {}}}'
+results = es.query(query_json)
+
+# 将结果写入Excel
+es.query(query_json, to_excel=True)
+```
+
+### 4.2 Kafka 交互
+
+> 将Kafka进行了封装,对平时我们爬虫的一些常规数据存储做操作，利用单例模式开发支持多线程操作【加锁】 使用`XKafka`类与Kafka进行交互。示例代码如下：
+
+```python
+from xdbx import x_kafka
+
+# 实例化Kafka生产者
+kafka_producer = x_kafka._connect()
+
+# 发送消息
+message = {'key': 'value'}
+kafka_producer.insert(message)
+```
+
+### 4.3 SQL Server 交互
+
+> 将SqlServer进行了封装，会自动智能的去创建一些表和字段相关的东西，会省爬虫开发者一些时间 使用`SqlServerPipeline`类与SQL Server进行交互。示例代码如下：
+
+```python
+from xdbx import x_mssql
+
+# 实例化SQL Server管道
+sql_server = x_mssql()
+
+# 插入数据
+item = {'column1': 'value1', 'column2': 'value2'}
+table = 'your_table_name'
+sql_server.insert_one(item, table)
+```
+
+### 4.4 PostgreSQL 交互
+
+> 将PostgreSQL进行了封装，会自动智能的去创建一些表和字段相关的东西，会省爬虫开发者一些时间。 使用`PostgrePipeline`类与PostgreSQL进行交互。示例代码如下：
+
+```python
+from xdbx import x_pgsql
+
+# 实例化PostgreSQL管道
+postgres = x_pgsql()
+
+# 执行SQL查询
+sql = 'SELECT * FROM your_table'
+results = postgres.find(sql)
+```
+
+### 4.5 MySQL 交互
+
+> 将MySQL进行了封装，会自动智能的去创建一些表和字段相关的东西，会省爬虫开发者一些时间。因为mysql<=5.5版本可能有些创建更新时间不稳定的问题，我已经把相关的代码先暂时不开放，如果有更好的方案我们再优化一下。 使用`MysqlDB`类与MySQL进行交互。示例代码如下：
+
+```python
+from xdbx import x_mysql
+
+# 实例化MySQL数据库连接
+mysql = x_mysql()
+
+# 执行SQL查询
+sql = 'SELECT * FROM your_table'
+results = mysql.find(sql)
+```
+
+## 5. 错误处理
+
+在使用过程中，如果遇到连接错误或查询错误，请检查配置文件中的连接信息是否正确，并查看日志输出的错误详情。
+
+## 6. 联系我们
+
+如果有任何问题或需要进一步的帮助，请联系我们。
+
 
 ## Q&A
 
